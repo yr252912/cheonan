@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>말랑말랑 MBTI 친구 찾기</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --cream:#fffaf2; --pink:#ffdfe8; --pink2:#ffb8ca; --yellow:#fff0a8;
+      --mint:#dff6df; --blue:#dceeff; --lav:#e9e1ff; --ink:#4b4653;
+      --muted:#7c7684; --line:#efe3df; --white:#fffefa; --shadow:0 14px 0 rgba(104,87,92,.08),0 22px 42px rgba(116,95,103,.10);
+    }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0; min-height:100vh; color:var(--ink);
+      font-family:Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;
+      background:
+        radial-gradient(circle at 8% 8%, #fff3b8 0 7%, transparent 7.3%),
+        radial-gradient(circle at 92% 14%, #ffdfe8 0 8%, transparent 8.3%),
+        radial-gradient(circle at 18% 88%, #dff6df 0 8%, transparent 8.3%),
+        linear-gradient(180deg,#fffaf2 0%,#fff8fb 55%,#f9fbff 100%);
+      padding:28px 14px 36px;
+      overflow-x:hidden;
+    }
+    body::before, body::after {
+      content:""; position:fixed; z-index:-1; border:3px solid #f0dfdc; border-radius:50%; opacity:.45;
+    }
+    body::before { width:34px; height:34px; left:7%; top:42%; box-shadow:120px -190px 0 -10px #ffe6ae, 720px 90px 0 -8px #dfeeff; }
+    body::after { width:16px; height:16px; right:8%; bottom:20%; box-shadow:-180px 110px 0 -3px #ffdce7,-600px -100px 0 -3px #e7defd; }
+    .app { width:min(980px,100%); margin:0 auto; }
+    .hero { text-align:center; margin-bottom:22px; position:relative; }
+    .badge {
+      display:inline-flex; align-items:center; gap:6px; background:var(--white); border:2px solid #f1dfda;
+      padding:8px 14px; border-radius:999px; font-size:13px; font-weight:900; box-shadow:0 7px 0 #f7e8e3;
+    }
+    .hero h1 { margin:17px 0 8px; font-size:clamp(32px,7vw,58px); letter-spacing:-2px; line-height:1.04; color:#504958; }
+    .hero h1 .accent { color:#ff7fa1; }
+    .hero p { margin:0 auto; max-width:650px; color:var(--muted); font-size:15px; line-height:1.75; }
+    .mascots { display:flex; justify-content:center; align-items:flex-end; gap:12px; margin:22px 0 8px; }
+    .mascot {
+      width:74px; height:68px; border:3px solid #625d64; background:#fff; border-radius:48% 48% 44% 44%; position:relative;
+      box-shadow:0 7px 0 rgba(94,83,88,.08); animation:bob 2.4s ease-in-out infinite;
+    }
+    .mascot:nth-child(2){ width:82px; height:75px; background:#fff3bb; animation-delay:.25s; }
+    .mascot:nth-child(3){ background:#dff1ff; animation-delay:.5s; }
+    .ear { position:absolute; width:20px; height:23px; background:inherit; border:3px solid #625d64; top:-13px; z-index:-1; }
+    .ear.l { left:7px; transform:rotate(-22deg); border-radius:70% 20% 40% 35%; }
+    .ear.r { right:7px; transform:rotate(22deg); border-radius:20% 70% 35% 40%; }
+    .eye { position:absolute; width:6px; height:9px; background:#514d53; border-radius:50%; top:29px; }
+    .eye.l { left:22px; } .eye.r { right:22px; }
+    .mouth { position:absolute; width:13px; height:7px; border-bottom:3px solid #514d53; border-radius:50%; left:50%; transform:translateX(-50%); top:40px; }
+    .blush { position:absolute; width:14px; height:7px; background:#ffc5cf; border-radius:50%; top:38px; opacity:.78; }
+    .blush.l { left:6px; } .blush.r { right:6px; }
+    .spark { position:absolute; font-size:22px; animation:twinkle 1.8s ease-in-out infinite; }
+    .spark.s1{left:8%;top:20px}.spark.s2{right:10%;top:72px;animation-delay:.8s}.spark.s3{left:17%;top:120px;animation-delay:.4s}
+    @keyframes bob { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-7px) rotate(1deg)} }
+    @keyframes twinkle { 0%,100%{transform:scale(.7) rotate(0);opacity:.55}50%{transform:scale(1.15) rotate(12deg);opacity:1} }
+
+    .panel {
+      background:rgba(255,254,250,.92); border:3px solid #f1e1dc; border-radius:34px; padding:clamp(18px,4vw,34px);
+      box-shadow:var(--shadow); position:relative; overflow:hidden;
+    }
+    .panel::before { content:""; position:absolute; width:130px; height:70px; background:#fff0b9; border-radius:50%; right:-45px; top:-25px; opacity:.45; transform:rotate(20deg); }
+    .step { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:20px; position:relative; z-index:1; }
+    .step strong { font-size:18px; font-weight:950; }
+    .progress { flex:1; max-width:230px; height:12px; background:#f6ece8; border:2px solid #ebddda; border-radius:999px; overflow:hidden; }
+    .progress span { display:block; height:100%; width:0; background:linear-gradient(90deg,#ffb5c8,#ffd36c); transition:.35s; border-radius:999px; }
+    .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; position:relative; z-index:1; }
+    .mbti-btn {
+      appearance:none; border:2px solid #eadfdb; background:#fffdfa; border-radius:24px; min-height:112px; padding:17px 10px; cursor:pointer;
+      color:var(--ink); transition:.22s cubic-bezier(.2,.8,.2,1); display:flex; flex-direction:column; align-items:center; justify-content:center;
+      box-shadow:0 6px 0 #f3e8e4; position:relative; overflow:hidden;
+    }
+    .mbti-btn::after { content:"♡"; position:absolute; right:10px; top:7px; color:#f2c8d2; font-weight:900; opacity:0; transform:scale(.6); transition:.2s; }
+    .mbti-btn:hover { transform:translateY(-5px) rotate(-1deg); border-color:#ffc6d5; box-shadow:0 10px 0 #fde7ed; }
+    .mbti-btn:hover::after { opacity:1; transform:scale(1); }
+    .mbti-btn.active { background:linear-gradient(180deg,#fff1f5,#ffe0e9); border-color:#ffb5c8; transform:translateY(-5px) scale(1.025); box-shadow:0 9px 0 #ffd0dc; }
+    .mbti-btn.active::after { content:"♥"; opacity:1; color:#ff89a8; transform:scale(1.05); }
+    .type { font-size:23px; font-weight:1000; letter-spacing:.7px; }
+    .nickname { margin-top:6px; font-size:12px; font-weight:750; color:#8d858e; }
+    .actions { display:flex; gap:10px; margin-top:22px; }
+    button.primary, button.ghost { border:0; border-radius:19px; min-height:52px; padding:14px 18px; font-size:15px; font-weight:950; cursor:pointer; transition:.2s; }
+    button.primary { flex:1; color:#5a4650; background:linear-gradient(180deg,#ffd4df,#ffbecf); border:2px solid #f4a9bc; box-shadow:0 7px 0 #eaa2b5; }
+    button.primary:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 9px 0 #eaa2b5; }
+    button.primary:active:not(:disabled){ transform:translateY(4px); box-shadow:0 3px 0 #eaa2b5; }
+    button.primary:disabled { opacity:.45; cursor:not-allowed; filter:grayscale(.15); }
+    button.ghost { background:#fff8db; color:#635b52; border:2px solid #eadfb7; box-shadow:0 6px 0 #efe5c7; }
+    .result { display:none; animation:pop .5s cubic-bezier(.2,.9,.25,1.2); }
+    .result.show { display:block; }
+    @keyframes pop { from{opacity:0;transform:translateY(14px) scale(.97)} to{opacity:1;transform:none} }
+    .result-top { text-align:center; padding:6px 0 20px; }
+    .you { color:var(--muted); font-weight:800; font-size:14px; }
+    .match-main { font-size:clamp(48px,11vw,86px); font-weight:1000; letter-spacing:-3px; margin:5px 0 7px; color:#ff7f9f; text-shadow:0 5px 0 #ffe5ec; }
+    .score { display:inline-flex; align-items:center; gap:7px; background:#eaf8e7; border:2px solid #cbe7c5; color:#4f8451; padding:9px 14px; border-radius:999px; font-weight:950; }
+    .reason { margin:21px auto 0; max-width:720px; background:#fffdf9; border:2px dashed #edcbc6; border-radius:24px; padding:18px; line-height:1.75; text-align:left; }
+    .reason b { color:#ff7b9d; }
+    .mini-title { margin:27px 0 13px; font-size:17px; }
+    .friends { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; }
+    .friend-card { background:#fff; border:2px solid #ede2dd; border-radius:24px; padding:18px; box-shadow:0 6px 0 #f4ebe7; transition:.2s; }
+    .friend-card:hover { transform:translateY(-4px) rotate(.5deg); }
+    .friend-card:nth-child(1){ background:#fff2f6; border-color:#ffd1dd; }
+    .friend-card:nth-child(2){ background:#fff9df; border-color:#f5e5a7; }
+    .friend-card:nth-child(3){ background:#eef8ff; border-color:#d2e8f7; }
+    .rank { display:inline-block; font-size:11px; font-weight:950; color:#8d858d; background:#ffffffaa; padding:5px 8px; border-radius:999px; }
+    .big { font-size:29px; font-weight:1000; margin:7px 0 5px; }
+    .friend-card p { margin:0; min-height:44px; color:var(--muted); font-size:14px; line-height:1.55; }
+    .compat { height:10px; background:#fff; border:1px solid #eadfda; border-radius:999px; overflow:hidden; margin-top:14px; }
+    .compat span { display:block; height:100%; background:linear-gradient(90deg,#ffafc4,#ffd96d); border-radius:inherit; }
+    .tip { margin-top:18px; color:#918a92; font-size:12px; text-align:center; line-height:1.6; }
+    .footer { text-align:center; margin-top:18px; color:#9d9499; font-size:12px; }
+    @media (max-width:760px){
+      body{padding-top:20px}.spark{display:none}.grid{grid-template-columns:repeat(2,1fr)}.friends{grid-template-columns:1fr}.panel{border-radius:26px}.step{align-items:flex-start;flex-direction:column}.progress{width:100%;max-width:none}.mascot{width:62px;height:58px}.mascot:nth-child(2){width:70px;height:64px}.eye{top:25px}.mouth{top:35px}.blush{top:34px}.eye.l{left:18px}.eye.r{right:18px}.actions{flex-direction:column}.ghost{order:2}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <span class="spark s1">✦</span><span class="spark s2">♡</span><span class="spark s3">✧</span>
+      <span class="badge">♡ 말랑말랑 MBTI 친구 찾기 ♡</span>
+      <div class="mascots" aria-hidden="true">
+        <div class="mascot"><i class="ear l"></i><i class="ear r"></i><i class="eye l"></i><i class="eye r"></i><i class="blush l"></i><i class="blush r"></i><i class="mouth"></i></div>
+        <div class="mascot"><i class="ear l"></i><i class="ear r"></i><i class="eye l"></i><i class="eye r"></i><i class="blush l"></i><i class="blush r"></i><i class="mouth"></i></div>
+        <div class="mascot"><i class="ear l"></i><i class="ear r"></i><i class="eye l"></i><i class="eye r"></i><i class="blush l"></i><i class="blush r"></i><i class="mouth"></i></div>
+      </div>
+      <h1>나랑 <span class="accent">찰떡인 친구</span>는 누구?</h1>
+      <p>내 MBTI를 콕 골라보면, 함께 있을 때 편하고 즐거울 가능성이 높은 친구 유형을 귀엽게 추천해드려요.</p>
+    </section>
+
+    <section class="panel" id="selectPanel">
+      <div class="step">
+        <strong>🌷 내 MBTI를 골라줘!</strong>
+        <div class="progress"><span id="progressBar"></span></div>
+      </div>
+      <div class="grid" id="mbtiGrid"></div>
+      <div class="actions">
+        <button class="primary" id="findBtn" disabled>내 찰떡 친구 만나러 가기 ♡</button>
+      </div>
+    </section>
+
+    <section class="panel result" id="resultPanel">
+      <div class="result-top">
+        <div class="you" id="youText"></div>
+        <div class="match-main" id="bestType"></div>
+        <div class="score" id="bestScore"></div>
+        <div class="reason" id="reasonBox"></div>
+      </div>
+      <h3 class="mini-title">🍀 함께 있으면 즐거울 가능성이 높은 친구 TOP 3</h3>
+      <div class="friends" id="friends"></div>
+      <div class="actions">
+        <button class="ghost" id="backBtn">↩ 다시 고르기</button>
+        <button class="primary" id="randomBtn">🎲 랜덤으로 한 번 더!</button>
+      </div>
+      <div class="tip">※ MBTI 궁합은 재미로 봐주세요. 실제 우정은 서로의 가치관과 배려, 대화 방식이 더 중요해요.</div>
+    </section>
+    <div class="footer">말랑한 친구 찾기 · 오늘도 좋은 친구를 만나길 ♡</div>
+  </main>
+
+  <script>
+    const TYPES = [
+      ['INTJ','전략가'],['INTP','논리술사'],['ENTJ','통솔자'],['ENTP','변론가'],
+      ['INFJ','옹호자'],['INFP','중재자'],['ENFJ','선도자'],['ENFP','활동가'],
+      ['ISTJ','현실주의자'],['ISFJ','수호자'],['ESTJ','경영자'],['ESFJ','집정관'],
+      ['ISTP','장인'],['ISFP','모험가'],['ESTP','사업가'],['ESFP','연예인']
+    ];
+
+    const MATCH = {
+      INTJ:[['ENFP',96,'아이디어와 실행의 균형'],['ENTP',92,'지적 자극과 유쾌한 토론'],['INFJ',88,'깊이 있는 대화와 이해']],
+      INTP:[['ENTJ',95,'논리와 추진력의 시너지'],['ENTP',91,'끝없는 아이디어 대화'],['INFJ',87,'차분한 이해와 통찰']],
+      ENTJ:[['INTP',95,'전략과 분석의 강한 조합'],['INFP',91,'목표와 가치의 균형'],['ENTP',89,'도전적인 에너지 공유']],
+      ENTP:[['INFJ',96,'창의성과 통찰의 케미'],['INTJ',93,'아이디어를 현실화하는 조합'],['ENFP',89,'활기차고 자유로운 소통']],
+      INFJ:[['ENTP',96,'새로운 관점과 깊은 공감'],['ENFP',94,'따뜻함과 영감의 조화'],['INTJ',89,'말이 적어도 통하는 깊이']],
+      INFP:[['ENFJ',97,'공감과 응원의 최강 조합'],['ENTJ',91,'가치와 실행력의 균형'],['ENFP',90,'감성과 상상력 공유']],
+      ENFJ:[['INFP',97,'진심 어린 공감과 격려'],['ISFP',92,'따뜻함과 편안한 감성'],['INFJ',90,'깊은 대화와 배려']],
+      ENFP:[['INTJ',96,'자유로운 영감과 안정감'],['INFJ',94,'감성적 교감과 성장'],['INFP',90,'상상력과 진심 공유']],
+      ISTJ:[['ESFP',94,'안정감과 활력의 균형'],['ESTP',90,'현실적인 실행력 공유'],['ISFJ',88,'책임감과 신뢰']],
+      ISFJ:[['ESTP',95,'배려와 행동력의 조합'],['ESFP',92,'따뜻하고 즐거운 관계'],['ISTJ',88,'꾸준하고 믿음직한 우정']],
+      ESTJ:[['ISFP',94,'현실성과 유연함의 균형'],['ISTP',91,'실용적인 문제 해결'],['ESFJ',88,'활동적이고 안정적인 관계']],
+      ESFJ:[['ISTP',95,'사교성과 독립성의 균형'],['ISFP',92,'따뜻하고 편안한 교감'],['ESTJ',88,'생활 리듬이 잘 맞는 편']],
+      ISTP:[['ESFJ',95,'차분함과 활기찬 소통'],['ESTJ',91,'실용성과 추진력'],['ISFP',89,'간섭 적고 편안한 관계']],
+      ISFP:[['ESTJ',94,'유연함과 실행력의 조화'],['ENFJ',92,'따뜻한 격려와 감성'],['ESFJ',90,'배려 깊고 편안한 분위기']],
+      ESTP:[['ISFJ',95,'행동력과 세심함의 균형'],['ISTJ',90,'현실적인 신뢰 관계'],['ESFP',88,'즐거운 에너지 공유']],
+      ESFP:[['ISTJ',94,'활기와 안정감의 균형'],['ISFJ',92,'따뜻하고 편안한 관계'],['ESTP',88,'즉흥적인 재미와 활동성']]
+    };
+
+    const intro = {
+      INTJ:'계획적이고 독립적인 편', INTP:'호기심이 많고 분석적인 편', ENTJ:'목표 지향적이고 추진력이 강한 편', ENTP:'새로운 아이디어와 토론을 즐기는 편',
+      INFJ:'깊은 공감과 의미를 중요하게 보는 편', INFP:'가치와 진정성을 중요하게 여기는 편', ENFJ:'사람을 챙기고 분위기를 이끄는 편', ENFP:'열정적이고 가능성을 발견하는 편',
+      ISTJ:'책임감 있고 꾸준한 편', ISFJ:'세심하고 배려가 깊은 편', ESTJ:'현실적이고 정리·실행에 강한 편', ESFJ:'친화적이고 주변을 잘 챙기는 편',
+      ISTP:'차분하고 실용적인 문제 해결형', ISFP:'부드럽고 자유로운 감각형', ESTP:'행동이 빠르고 현장감이 좋은 편', ESFP:'활기차고 사람들과 즐거움을 나누는 편'
+    };
+
+    let selected = null;
+    const grid = document.getElementById('mbtiGrid');
+    const findBtn = document.getElementById('findBtn');
+    const progressBar = document.getElementById('progressBar');
+    const selectPanel = document.getElementById('selectPanel');
+    const resultPanel = document.getElementById('resultPanel');
+
+    TYPES.forEach(([type,name]) => {
+      const btn = document.createElement('button');
+      btn.className = 'mbti-btn';
+      btn.innerHTML = `<span class="type">${type}</span><span class="nickname">${name}</span>`;
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.mbti-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active'); selected = type; findBtn.disabled = false; progressBar.style.width='100%';
+      });
+      grid.appendChild(btn);
+    });
+
+    function showResult(type){
+      selected = type;
+      const top = MATCH[type];
+      document.getElementById('youText').textContent = `나의 MBTI ${type} · ${intro[type]}`;
+      document.getElementById('bestType').textContent = top[0][0];
+      document.getElementById('bestScore').textContent = `♡ 친구 궁합 ${top[0][1]}%`;
+      document.getElementById('reasonBox').innerHTML = `<b>${type} × ${top[0][0]}</b><br>${top[0][2]}. 서로 다른 강점을 자연스럽게 채워주면서 대화의 재미와 관계의 안정감을 함께 만들 가능성이 높아요.`;
+      const friends = document.getElementById('friends');
+      friends.innerHTML = '';
+      top.forEach((item,i)=>{
+        const [t,score,reason] = item;
+        const card = document.createElement('div');
+        card.className='friend-card';
+        card.innerHTML=`<div class="rank">TOP ${i+1}</div><div class="big">${t}</div><p>${reason}</p><div class="compat"><span style="width:${score}%"></span></div>`;
+        friends.appendChild(card);
+      });
+      selectPanel.style.display='none'; resultPanel.classList.add('show');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    findBtn.addEventListener('click',()=> selected && showResult(selected));
+    document.getElementById('backBtn').addEventListener('click',()=>{
+      resultPanel.classList.remove('show'); selectPanel.style.display='block'; window.scrollTo({top:0,behavior:'smooth'});
+    });
+    document.getElementById('randomBtn').addEventListener('click',()=>{
+      const random = TYPES[Math.floor(Math.random()*TYPES.length)][0]; showResult(random);
+    });
+  </script>
+</body>
+</html>
